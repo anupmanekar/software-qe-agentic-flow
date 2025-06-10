@@ -1,0 +1,35 @@
+test_analysis_task:
+    description: >
+      Answer this question about test data: {user_question}
+    expected_output: >
+      Specific answer to the question
+    agent: software_qa_engineer
+
+get_bdd_test_for_ticket_id:
+  description: >
+    Using BDD Generator API Link, get the BDD tests for the Azure Ticket ID {ticket_id}
+  expected_output: >
+    A JSON with result as key and BDD scenarios as value
+  agent: software_qa_engineer
+
+extract_bdd_scenarios:
+  description: >
+    Review the context you got as JSON and extract all BDD scenarios.
+    Enter test data in BDD scenarios from knowledge sources.
+  expected_output: >
+    List of BDD scenarios in feature file
+  agent: software_qa_engineer
+
+
+ui_test_executor_task:
+  description: >
+    The goal of this task is to execute the first BDD scenario in the context using the Browser-Use tool.
+    If there are no BDD scenarios, please mention "No BDD scenarios found" in the output and exit the task.
+    Before starting the task, please ensure that:
+      1. You do not use any search engine for this task.
+      2. You DO NOT use any random test data. Search for knowledge sources for test data.
+      3. You ONLY use the Browser-Use tool for executing the BDD scenario.
+    Always start the scenario with PARASOFT URL.
+  expected_output: >
+    Result of BDD scenario
+  agent: software_qa_engineer

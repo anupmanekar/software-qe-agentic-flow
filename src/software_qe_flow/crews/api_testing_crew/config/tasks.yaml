@@ -1,0 +1,58 @@
+extract_api_information:
+  description: >
+    DO NOT use any tools for this task.
+    Review the Open API Specification {schema} and extract following information for API {apiUnderTest} from above:
+    - URL
+    - Method
+    - Request structure
+    - Request body with test values
+    - Query parameters
+    - Path parameters
+    Please note that 
+    1. URL would be present under "paths"
+    2. Method would be present under each url as "get", "post", "put", "delete"
+    3. Request body would be present under "requestBody" but structure would be present under "components" -> "schemas". So first check if the requestBody is present and then extract the structure from "components" -> "schemas".
+    4. You can find path parameters under "parameters" -> "in" as "path"
+    5. You can find query parameters under "parameters" -> "in" as "query"
+
+    if you are unable to find the information in first try, please mention it in the output and exit.
+  expected_output: >
+    A Pydantic structure with extracted url, method, request structure, path parameters and query parameters.
+  agent: software_qa_engineer
+
+generate_api_tests_task:
+  description: >
+    DO NOT use any tools for this task.
+    Review the context you got as pydantic structure.
+    Review the different response codes and response structure for the API {apiUnderTest} from Open API specification.
+    Based on above information, please generate test cases using following steps:
+    1. Think of different positive scenarios with valid test data. Always search for knowledge sources for valid test data.
+    2. Think of different negative scenarios with invalid test data. Search for knowledge sources if required.
+    3. Think of different edge cases with valid and invalid test data. Search for knowledge sources if required.
+    While generating test cases, make sure that none of data is using inline functions like zfill or other string manipulation functions.
+  expected_output: >
+    A Pydantic list of dictionary objects containing test_description, url, http_method, request_body, query_parameters, path_parameters, expected_response_status_code
+  agent: software_qa_engineer
+
+generate_api_pytest_task:
+  description: >
+    DO NOT use any tools for this task.
+    The goal of this task is to generate Python based pytest test cases for the API {apiUnderTest} using the test cases you generated in previous task.
+    Review the context you got as Pydantic list of dictionary objects.
+    Generate pytest test cases for each test case in the context.
+    Make sure that you use the pytest decorators for each test case.
+    Make sure you always generate the code. Do not give any explanations as final answer.
+  expected_output: >
+    A Python code file with pytest test cases
+  agent: software_qa_engineer
+
+api_test_task:
+  description: >
+    The goal of this task is to execute tests with given parameters in context using the API invocation tool.
+    Review the context you got as pydantic structure and pass following fields for second test in structure - url, http_method, request_body, query_parameters, path_parameters API invocation tool.
+    if response of API is "Error invoking API", please mention as "Error invoking API" in the output and exit the task.
+    Even if response of API is failure or error, DO NOT try the task again.
+  expected_output: >
+    A JSON with response body or error message
+  agent: software_qa_engineer
+
