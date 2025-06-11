@@ -1,4 +1,5 @@
 import os
+from random import randint
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
 from crewai_tools.tools import CodeDocsSearchTool, FileReadTool
@@ -63,6 +64,16 @@ class ApiTestingCrew():
 		)
 	
 	@task
+	def extract_all_api_information(self) -> Task:
+		return Task(
+			config=self.tasks_config['extract_all_api_information'],
+			output_pydantic=ApiInformation,
+			output_file='output/api_information.json',
+			max_retries=0,
+			human_input=True
+		)
+	
+	@task
 	def generate_api_tests_in_json_format(self) -> Task:
 		return Task(
 			config=self.tasks_config['generate_api_tests_task'],
@@ -73,9 +84,11 @@ class ApiTestingCrew():
 
 	@task
 	def generate_api_tests_in_pytest_format(self) -> Task:
+		random_number = randint(1, 9999)
+		output_file = f"output/cat_api_tests_{random_number}.py"
 		return Task(
 			config=self.tasks_config['generate_api_pytest_task'],
-			output_file='output/cat_api_tests.py',
+			output_file=output_file,
 			max_retries=1,
 			human_input=True
 		)
@@ -88,42 +101,25 @@ class ApiTestingCrew():
 			max_retries=0
 		)
 
-	@task
-	def analysis_task(self) -> Task:
-		return Task(
-			config=self.tasks_config['test_analysis_task'],
-			max_retries=0
-		)
-
-	@task
-	def generate_bdd_tests_for_ticket_id(self) -> Task:
-		return Task(
-			config=self.tasks_config['get_bdd_test_for_ticket_id'],
-			output_file='output/bdd_tests.json',
-			max_retries=0
-		)
-	@task
-	def extract_bdd_scenarios(self) -> Task:
-		return Task(
-			config=self.tasks_config['extract_bdd_scenarios'],
-			output_file='output/bdd_scenarios.feature',
-			max_retries=0
-		)
-
-	@task
-	def ui_execution_task(self) -> Task:
-		return Task(
-			config=self.tasks_config['ui_test_executor_task'],
-			max_retries=0
-		)
 
 	@crew
-	def crew(self) -> Crew:
+	def crew(self, num_of_apis:str, activity_type:str) -> Crew:
 		"""Creates the QA Agent Analyst crew"""
-
+		print(f"Params received in crew: {num_of_apis} and {activity_type}")
+		identified_tasks = []
+		
+		if (num_of_apis == "ALL"):
+			identified_tasks.extend([self.extract_all_api_information()])
+		elif num_of_apis.find(",") != -1:
+			identified_tasks.extend([self.extract_api_information(), self.generate_api_tests_in_json_format(), self.generate_api_tests_in_pytest_format()])
+		else:
+			identified_tasks.extend([self.extract_api_information(), self.generate_api_tests_in_json_format(), self.generate_api_tests_in_pytest_format(), self.api_execution_task()])	
+		
+		print(f"Tasks to be executed: {identified_tasks}")
+		
 		return Crew(
 			agents=[self.software_qa_engineer()],
-			tasks=[self.extract_api_information(), self.generate_api_tests_in_json_format(), self.generate_api_tests_in_pytest_format()], # Automatically created by the @task decorator
+			tasks= identified_tasks, # Automatically created by the @task decorator
 			process=Process.sequential,
 			verbose=True,
 			knowledge_sources=[self.csv_source],
@@ -133,5 +129,7 @@ class ApiTestingCrew():
 					"model": "models/text-embedding-004",
 					"api_key": GEMINI_API_KEY,
 				}
-			}
+			},
+			output_log_file=True
 		)
+	

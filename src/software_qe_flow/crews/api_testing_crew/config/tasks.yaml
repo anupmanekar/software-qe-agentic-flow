@@ -1,3 +1,25 @@
+extract_all_api_information:
+  description: >
+    DO NOT USE ANY TOOLS for this task.
+    Review the Open API Specification {schema} and extract following information for all API from above:
+    - URL
+    - Method
+    - Request structure
+    - Request body with test values
+    - Query parameters
+    - Path parameters
+    Please note that 
+    1. URL would be present under "paths"
+    2. Method would be present under each url as "get", "post", "put", "delete"
+    3. Request body would be present under "requestBody" but structure would be present under "components" -> "schemas". So first check if the requestBody is present and then extract the structure from "components" -> "schemas".
+    4. You can find path parameters under "parameters" -> "in" as "path"
+    5. You can find query parameters under "parameters" -> "in" as "query"
+
+    if you are unable to find the information in first try, please mention it in the output and exit.
+  expected_output: >
+    A Pydantic array structure with extracted url, method, request structure, path parameters and query parameters.
+  agent: software_qa_engineer
+
 extract_api_information:
   description: >
     DO NOT use any tools for this task.

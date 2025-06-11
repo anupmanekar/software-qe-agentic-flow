@@ -79,31 +79,54 @@ class ApiTestFlow(Flow[TestActivityState]):
     @listen("multiple_methods_tests")
     def generate_tests_for_multiple_methods(self):
         print("Generating tests for multiple methods")
+        api_testing_crew = ApiTestingCrew().crew(num_of_apis=self.state.api_under_test, activity_type=self.state.activity_type)
+        input_sets = []
+        for api in self.state.api_under_test.split(","):
+            input_sets.append({'apiUnderTest': api.strip(), 'schema': self.state.api_schema})
+        result = (
+            api_testing_crew
+            .kickoff_for_each(inputs=input_sets)
+        )
+        for res in result:
+            print(f"Result: {res}")
+        print("Crew Usage Metrics:", api_testing_crew.usage_metrics)
+        self.state.result = result
     
     @listen("all_methods_tests")
     def generate_tests_for_all_methods(self):
         print("Generating tests for all methods")
+        api_testing_crew = ApiTestingCrew().crew(num_of_apis=self.state.api_under_test, activity_type=self.state.activity_type)
+        result = (
+            api_testing_crew
+            .kickoff(inputs={'apiUnderTest': self.state.api_under_test, 'schema': self.state.api_schema})
+        )
+        print("Tests generated", result)
+        print("Crew Usage Metrics:", api_testing_crew.usage_metrics)
+        self.state.result = result
 
     @listen("single_method_test")
     def generate_test_for_one_api(self):
         print("Generating test for a single API method:", self.state.api_under_test)
+        api_testing_crew = ApiTestingCrew().crew(num_of_apis=self.state.api_under_test, activity_type=self.state.activity_type)
         result = (
-            ApiTestingCrew()
-            .crew()
+            api_testing_crew
             .kickoff(inputs={'apiUnderTest': self.state.api_under_test, 'schema': self.state.api_schema})
         )
-
         print("Tests generated", result.raw)
-        self.state.result = result.raw
+        print("Crew Usage Metrics:", api_testing_crew.usage_metrics)
+        self.state.result = result
 
 
 def kickoff():
     test_flow = ApiTestFlow()
+    api_under_test = "/pet/findByStatus, /pet/{petId}"  
+    #api_under_test = "ALL"
+    #api_under_test = "/pet/{petId}" 
     test_flow.kickoff(inputs={
         "project": "petstore",
         "test_type": "API",
         "api_schema_path": "schema/petstore/openapi.json",
-        "api_under_test": "/pet/{petId}",
+        "api_under_test": api_under_test,
         "activity_type": ActivityType.GENERATE_TEST
     })
 
