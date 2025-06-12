@@ -1,56 +1,51 @@
-# {{crew_name}} Crew
+# Agentic Framework For Quality Engineering Tasks
 
-Welcome to the {{crew_name}} Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+Agentic framework to complete various API and UI test activities(Requirement analysis, test generation, test data integration, test execution). This is not generic framework but can be used as reference/boilerplate. It can be customized depending on your API and UI. As of now base application for API is https://petstore.swagger.io/. Need to build for UI yet.
+
+## Folder Structure
+
+```
+software-qe-agentic-flow/
+├── src/software_qe_flow/   # Agentic code
+    ├── crews               # Source code for crews
+    ├── models              # Data models that can be used as input/output to agents
+    ├── tools               # Tools
+    └── utils               # Utilities
+├── knowledge/              # Knowledge sources/test data storage.
+├── schema/                 # API schema for petstore
+├── output/                 # Any output files that are generated.
+├── main.py                 # Driver code
+├── .env                    # environment file
+├── pyproject.toml          # Python dependencies
+└── README.md               # Project overview
+```
 
 ## Installation
 
-Ensure you have Python >=3.10 <3.13 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/yourusername/software-qe-agentic-flow.git
+    cd software-qe-agentic-flow
+    ```
 
-First, if you haven't already, install uv:
+2. Install dependencies (Ensure that `uv` is installed):
+    ```bash
+    uv sync
+    ```
 
-```bash
-pip install uv
-```
+## LLM
 
-Next, navigate to your project directory and install the dependencies:
+As of now two LLMs are supported - Gemini LLM and Llama3.1:8b. To use, update the code in respective crew `api_testing_crew.py` and `ui_testing_crew.py`
 
-(Optional) Lock the dependencies and install them by using the CLI command:
-```bash
-crewai install
-```
+## Usage
 
-### Customizing
+1. In case of Gemini usage, update .env file with your key. In case of Llama3.1, ensure that ollama is running on your system
+2. Update the input values in `kickoff()` function of `main.py`
+3. Run an example workflow:
+    ```bash
+    crewai run
+    ```
+4. You should see the console log as well as files generated in `output/` folder.
 
-**Add your `OPENAI_API_KEY` into the `.env` file**
+---
 
-- Modify `src/software_qe_flow/config/agents.yaml` to define your agents
-- Modify `src/software_qe_flow/config/tasks.yaml` to define your tasks
-- Modify `src/software_qe_flow/crew.py` to add your own logic, tools and specific args
-- Modify `src/software_qe_flow/main.py` to add custom inputs for your agents and tasks
-
-## Running the Project
-
-To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
-
-```bash
-crewai run
-```
-
-This command initializes the software-qe-flow Crew, assembling the agents and assigning them tasks as defined in your configuration.
-
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
-
-## Understanding Your Crew
-
-The software-qe-flow Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
-
-## Support
-
-For support, questions, or feedback regarding the {{crew_name}} Crew or crewAI.
-
-- Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
-- [Chat with our docs](https://chatg.pt/DWjSBZn)
-
-Let's create wonders together with the power and simplicity of crewAI.

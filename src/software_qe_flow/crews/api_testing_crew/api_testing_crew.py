@@ -1,5 +1,5 @@
 import os
-from random import randint
+from datetime import datetime
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
 from crewai_tools.tools import CodeDocsSearchTool, FileReadTool
@@ -16,6 +16,10 @@ gemini_llm = LLM(
     model="gemini/gemini-2.0-flash",
     api_key=GEMINI_API_KEY,
     temperature=0,
+)
+ollama_llm = LLM(
+    model="ollama/llama3.1:8b",
+    base_url="http://localhost:11434"
 )
 
 # If you want to run a snippet of code before or after the crew starts, 
@@ -39,7 +43,8 @@ class ApiTestingCrew():
 		return Agent(
 			config=self.agents_config['software_qa_engineer'],
 			verbose=True,
-			llm=gemini_llm,
+			cache=False,
+			llm=ollama_llm,
 			max_iter=1,
 			max_retry_limit=0,
 			knowledge_sources=[self.csv_source],
@@ -84,8 +89,8 @@ class ApiTestingCrew():
 
 	@task
 	def generate_api_tests_in_pytest_format(self) -> Task:
-		random_number = randint(1, 9999)
-		output_file = f"output/cat_api_tests_{random_number}.py"
+		current_datetime = datetime.now()
+		output_file = f"output/cat_api_tests_{current_datetime}.py"
 		return Task(
 			config=self.tasks_config['generate_api_pytest_task'],
 			output_file=output_file,
@@ -121,7 +126,8 @@ class ApiTestingCrew():
 			agents=[self.software_qa_engineer()],
 			tasks= identified_tasks, # Automatically created by the @task decorator
 			process=Process.sequential,
-			verbose=True,
+			verbose=False,
+			memory=True,
 			knowledge_sources=[self.csv_source],
 			embedder={
 				"provider": "google",
@@ -129,7 +135,6 @@ class ApiTestingCrew():
 					"model": "models/text-embedding-004",
 					"api_key": GEMINI_API_KEY,
 				}
-			},
-			output_log_file=True
+			}
 		)
 	
