@@ -44,7 +44,7 @@ class ApiTestingCrew():
 			config=self.agents_config['software_qa_engineer'],
 			verbose=True,
 			cache=False,
-			llm=ollama_llm,
+			llm=gemini_llm,
 			max_iter=1,
 			max_retry_limit=0,
 			knowledge_sources=[self.csv_source],

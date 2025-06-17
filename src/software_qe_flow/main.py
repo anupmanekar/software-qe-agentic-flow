@@ -119,9 +119,9 @@ class ApiTestFlow(Flow[TestActivityState]):
 
 def kickoff():
     test_flow = ApiTestFlow()
-    #api_under_test = "/pet/findByStatus, /pet/{petId}"  
+    api_under_test = "/pet/findByStatus, /pet/{petId}"  
     #api_under_test = "ALL"
-    api_under_test = "/pet/{petId}" 
+    #api_under_test = "/pet/{petId}" 
     test_flow.kickoff(inputs={
         "project": "petstore",
         "test_type": "API",
