@@ -64,17 +64,17 @@ generate_api_pytest_task:
     Generate pytest test cases for each test case in the context.
     Make sure that you use the pytest decorators for each test case.
     Make sure you always generate the code. Do not give any explanations as final answer.
+    Make sure that you do not include any backticks at the start or end of the code.
   expected_output: >
     A Python code file with pytest test cases
   agent: software_qa_engineer
 
 api_test_task:
   description: >
-    The goal of this task is to execute tests with given parameters in context using the API invocation tool.
-    Review the context you got as pydantic structure and pass following fields for second test in structure - url, http_method, request_body, query_parameters, path_parameters API invocation tool.
-    if response of API is "Error invoking API", please mention as "Error invoking API" in the output and exit the task.
-    Even if response of API is failure or error, DO NOT try the task again.
+    The goal of this task is to execute tests with given parameters in context using the python tool.
+    Review the python file you got as context and execute it.
+    if there is error, print the output and exit. 
   expected_output: >
-    A JSON with response body or error message
+    Result of test execution
   agent: software_qa_engineer
 

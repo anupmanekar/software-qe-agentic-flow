@@ -1,4 +1,6 @@
 from pydantic import BaseModel, Field
+from enum import Enum
+
 
 class ApiInformation(BaseModel):
 	"""Input schema for API test generation."""
@@ -17,3 +19,9 @@ class GeneratedTests(BaseModel):
     query_params: dict = Field({}, description="Query parameters to use for the request.")
     path_params: dict = Field({}, description="Path parameters to use for the request.")
     expected_response_status_code: int = Field(200, description="Expected response status code for the API.")
+
+class ActivityType(str, Enum):
+    NONE = ""
+    GENERATE_TEST = "generate_test"
+    EXECUTE_TEST = "execute_test"
+    ANALYZE_RESULTS = "analyze_results"

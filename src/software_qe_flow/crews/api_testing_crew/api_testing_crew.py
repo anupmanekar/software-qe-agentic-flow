@@ -5,9 +5,12 @@ from crewai.project import CrewBase, agent, crew, task
 from crewai_tools.tools import CodeDocsSearchTool, FileReadTool
 from crewai.knowledge.source.json_knowledge_source import JSONKnowledgeSource
 from crewai.knowledge.source.csv_knowledge_source import CSVKnowledgeSource
-from software_qe_flow.tools.qe_tools import invoke_api_tool
+from software_qe_flow.tools.qe_tools import execute_python_file
 from software_qe_flow.models.api_tests_model import ApiInformation, GeneratedTests
+from software_qe_flow.models.api_tests_model import ActivityType
+from dotenv import load_dotenv
 
+load_dotenv()
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
@@ -65,7 +68,7 @@ class ApiTestingCrew():
 			output_pydantic=ApiInformation,
 			output_file='output/api_information.json',
 			max_retries=0,
-			human_input=True
+			human_input=False
 		)
 	
 	@task
@@ -90,7 +93,7 @@ class ApiTestingCrew():
 	@task
 	def generate_api_tests_in_pytest_format(self) -> Task:
 		current_datetime = datetime.now()
-		output_file = f"output/cat_api_tests_{current_datetime}.py"
+		output_file = f"output/cat_api_tests.py"
 		return Task(
 			config=self.tasks_config['generate_api_pytest_task'],
 			output_file=output_file,
@@ -102,8 +105,10 @@ class ApiTestingCrew():
 	def api_execution_task(self) -> Task:
 		return Task(
 			config=self.tasks_config['api_test_task'],
-			context=[self.extract_api_information()],
-			max_retries=0
+			context=[self.generate_api_tests_in_pytest_format()],
+			max_retries=0,
+			retry_count=0,
+			tools=[execute_python_file]
 		)
 
 
@@ -115,10 +120,15 @@ class ApiTestingCrew():
 		
 		if (num_of_apis == "ALL"):
 			identified_tasks.extend([self.extract_all_api_information()])
-		elif num_of_apis.find(",") != -1:
-			identified_tasks.extend([self.extract_api_information(), self.generate_api_tests_in_json_format(), self.generate_api_tests_in_pytest_format()])
 		else:
-			identified_tasks.extend([self.extract_api_information(), self.generate_api_tests_in_json_format(), self.generate_api_tests_in_pytest_format(), self.api_execution_task()])	
+			identified_tasks.extend([self.extract_api_information()])
+
+		if (activity_type == ActivityType.GENERATE_TEST):
+			identified_tasks.extend([self.generate_api_tests_in_json_format(), self.generate_api_tests_in_pytest_format()])
+		elif (activity_type == ActivityType.EXECUTE_TEST):
+			identified_tasks.extend([self.generate_api_tests_in_json_format(), self.generate_api_tests_in_pytest_format(), self.api_execution_task()])
+		else:
+			raise ValueError(f"Invalid activity type: {activity_type}. Expected 'GENERATE_TEST' or 'EXECUTE_TEST'.")
 		
 		print(f"Tasks to be executed: {identified_tasks}")
 		
@@ -126,7 +136,7 @@ class ApiTestingCrew():
 			agents=[self.software_qa_engineer()],
 			tasks= identified_tasks, # Automatically created by the @task decorator
 			process=Process.sequential,
-			verbose=False,
+			verbose=True,
 			memory=True,
 			knowledge_sources=[self.csv_source],
 			embedder={

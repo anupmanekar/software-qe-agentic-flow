@@ -8,15 +8,7 @@ from crewai.flow import Flow, listen, start, router
 
 from software_qe_flow.crews.api_testing_crew.api_testing_crew import ApiTestingCrew
 from software_qe_flow.utils import read_file
-from enum import Enum
-
-
-
-class ActivityType(str, Enum):
-    NONE = ""
-    GENERATE_TEST = "generate_test"
-    EXECUTE_TEST = "execute_test"
-    ANALYZE_RESULTS = "analyze_results"
+from software_qe_flow.models.api_tests_model import ActivityType
 
 class TestActivityState(BaseModel):
     project: str = ""
@@ -88,7 +80,7 @@ class ApiTestFlow(Flow[TestActivityState]):
             .kickoff_for_each(inputs=input_sets)
         )
         for res in result:
-            print(f"Result: {res}")
+            print(f"------------------Result-------------------------\n {res}")
         print("Crew Usage Metrics:", api_testing_crew.usage_metrics)
         self.state.result = result
     
@@ -119,15 +111,16 @@ class ApiTestFlow(Flow[TestActivityState]):
 
 def kickoff():
     test_flow = ApiTestFlow()
-    api_under_test = "/pet/findByStatus, /pet/{petId}"  
+    #api_under_test = "/pet/findByStatus, /pet/{petId}"  
     #api_under_test = "ALL"
-    #api_under_test = "/pet/{petId}" 
+    api_under_test = "/pet/{petId}" 
+    #api_under_test = "/pet"  # This can be a single API or a comma-separated list of APIs
     test_flow.kickoff(inputs={
         "project": "petstore",
         "test_type": "API",
         "api_schema_path": "schema/petstore/openapi.json",
         "api_under_test": api_under_test,
-        "activity_type": ActivityType.GENERATE_TEST
+        "activity_type": ActivityType.EXECUTE_TEST
     })
 
 
